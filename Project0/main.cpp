@@ -1,6 +1,7 @@
 #include <omp.h>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 
 #ifndef NUMT
 #define NUMT             4
@@ -21,11 +22,14 @@ main( )
 #endif
         int numprocs = omp_get_num_procs();
         printf("Number of processors: %d\n", numprocs);
+        printf("Arraysize: %d\n", ARRAYSIZE);
+        printf("Tries: %d\n", NUMTRIES);
 
         omp_set_num_threads( NUMT );
         fprintf( stderr, "Using %d threads\n", NUMT );
 
         double maxMegaMults = 0.;
+        double minPeakTime = DBL_MAX;
 
         for( int t = 0; t < NUMTRIES; t++ )
         {
@@ -39,11 +43,19 @@ main( )
 
                 double time1 = omp_get_wtime( );
                 double megaMults = (double)ARRAYSIZE/(time1-time0)/1000000.;
+                // get time in microseconds
+                double peakTime = (time1-time0) * 1000;
+                //printf( "Peak Time = %8.4lf microseconds\n", peakTime );
+                //printf( "Time 1 = %8.4lf Sec\n", time1 );
+                //printf( "Time 2 = %8.4lf Sec\n", time0 );
                 if( megaMults > maxMegaMults )
                         maxMegaMults = megaMults;
+                if( peakTime < minPeakTime )
+                        minPeakTime = peakTime;
         }
 
         printf( "Peak Performance = %8.2lf MegaMults/Sec\n", maxMegaMults );
+        printf( "Peak Time = %8.4lf microseconds\n", minPeakTime );
 
     // note: %lf stands for "long float", which is how printf prints a "double"
     //        %d stands for "decimal integer", not "double"
