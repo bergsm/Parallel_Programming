@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
+#include <stdio.h>
 
 // setting the number of threads:
 #ifndef NUMT
@@ -80,8 +81,9 @@ main( int argc, char *argv[ ] )
             float b = -2.*( xc + yc );
             float c = xc*xc + yc*yc - r*r;
             float d = b*b - 4.*a*c;
-            //TODO If d is less than 0., then the circle was completely missed. (Case A) Continue on to the next trial in the for-loop.
-
+            //If d is less than 0., then the circle was completely missed. (Case A) Continue on to the next trial in the for-loop.
+            if (d < 0)
+                continue;
 
             // hits the circle:
             // get the first intersection:
@@ -89,8 +91,9 @@ main( int argc, char *argv[ ] )
             float t1 = (-b + d ) / ( 2.*a );    // time to intersect the circle
             float t2 = (-b - d ) / ( 2.*a );    // time to intersect the circle
             float tmin = t1 < t2 ? t1 : t2;     // only care about the first intersection
-            //TODO If tmin is less than 0., then the circle completely engulfs the laser pointer. (Case B) Continue on to the next trial in the for-loop.
-
+            //If tmin is less than 0., then the circle completely engulfs the laser pointer. (Case B) Continue on to the next trial in the for-loop.
+            if (tmin < 0)
+                continue;
 
             // where does it intersect the circle?
             float xcir = tmin;
@@ -117,10 +120,12 @@ main( int argc, char *argv[ ] )
 
             // find out if it hits the infinite plate:
             float t = ( 0. - ycir ) / outy;
-            //TODO If t is less than 0., then the reflected beam went up instead of down. Continue on to the next trial in the for-loop.
+            //If t is less than 0., then the reflected beam went up instead of down. Continue on to the next trial in the for-loop.
+            if (t < 0)
+                continue;
 
-            //TODO Otherwise, this beam hit the infinite plate. (Case D) Increment the number of hits and continue on to the next trial in the for-loop.
-
+            //Otherwise, this beam hit the infinite plate. (Case D) Increment the number of hits and continue on to the next trial in the for-loop.
+            numHits++;
 
         }
         double time1 = omp_get_wtime( );
@@ -128,7 +133,12 @@ main( int argc, char *argv[ ] )
         if( megaTrialsPerSecond > maxPerformance )
             maxPerformance = megaTrialsPerSecond;
         currentProb = (float)numHits/(float)NUMTRIALS;
-        //TODO print out num threads, num trials, probablility
+        //print out num threads, num trials, probablility
+        //TODO record to file
+        printf("%d, %d, %d, %4.4lf\n", t, NUMT, NUMTRIALS, currentProb);
+    }
+    printf("Max Performance: %8.2lf MegaMults/sec\n", maxPerformance);
+    return 0;
 }
 
 
