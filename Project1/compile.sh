@@ -16,7 +16,7 @@ do
         if [ "$threads" -eq "8" ] && [ "$trials" -eq "5000000" ]; then
             last=1
         fi
-        if [ "$machine" == "Darwin" ]; then
+        if [ "$machine" = "Darwin" ]; then
             macCompile
         else
             linuxCompile
