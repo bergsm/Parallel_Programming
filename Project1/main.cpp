@@ -140,7 +140,6 @@ main( int argc, char *argv[ ] )
         if( megaTrialsPerSecond > maxPerformance )
             maxPerformance = megaTrialsPerSecond;
         currentProb = (float)numHits/(float)NUMTRIALS;
-        //print out num threads, num trials, probablility
     }
     //print results
     printf("%8.2lf, ",maxPerformance);
@@ -148,6 +147,7 @@ main( int argc, char *argv[ ] )
     {
         FILE* fp;
         fp = fopen("prob.txt", "w+");
+        //TODO print speedup and parallel fraction?
         fprintf(fp, "%4.4lf", currentProb);
     }
     return 0;

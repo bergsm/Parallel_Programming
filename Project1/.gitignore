@@ -5,3 +5,4 @@ output.txt
 output.csv
 *.txt
 *.gcp.*
+*.gsheet
