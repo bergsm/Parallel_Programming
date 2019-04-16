@@ -9,6 +9,11 @@
 #define NUMT        1
 #endif
 
+// for printing probability
+#ifndef LAST
+#define LAST        0
+#endif
+
 // setting the number of trials in the monte carlo simulation:
 #ifndef NUMTRIALS
 #define NUMTRIALS   1000000
@@ -138,7 +143,13 @@ main( int argc, char *argv[ ] )
         //print out num threads, num trials, probablility
     }
     //print results
-    printf("%d, %d, %4.4lf, %8.2lf\n", NUMT, NUMTRIALS, currentProb, maxPerformance);
+    printf("%8.2lf, ",maxPerformance);
+    if (LAST)
+    {
+        FILE* fp;
+        fp = fopen("prob.txt", "w+");
+        fprintf(fp, "%4.4lf", currentProb);
+    }
     return 0;
 }
 
