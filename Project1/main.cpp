@@ -16,7 +16,7 @@
 
 // how many tries to discover the maximum performance:
 #ifndef NUMTRIES
-#define NUMTRIES    10
+#define NUMTRIES    100
 #endif
 
 // ranges for the random numbers:
@@ -36,6 +36,8 @@ void        TimeOfDaySeed( );
 int
 main( int argc, char *argv[ ] )
 {
+    FILE *fp;
+
 #ifndef _OPENMP
     fprintf( stderr, "No OpenMP support!\n" );
     return 1;
@@ -134,10 +136,9 @@ main( int argc, char *argv[ ] )
             maxPerformance = megaTrialsPerSecond;
         currentProb = (float)numHits/(float)NUMTRIALS;
         //print out num threads, num trials, probablility
-        //TODO record to file
-        printf("%d, %d, %d, %4.4lf\n", t, NUMT, NUMTRIALS, currentProb);
     }
-    printf("Max Performance: %8.2lf MegaMults/sec\n", maxPerformance);
+    //print results
+    printf("%d, %d, %4.4lf, %8.2lf\n", NUMT, NUMTRIALS, currentProb, maxPerformance);
     return 0;
 }
 
