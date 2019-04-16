@@ -1,5 +1,8 @@
 #~/bin/bash
 
+#TODO use uname to distinguish machines
+#TODO use variables for compile commands
+
 rm output.txt
 
 for t in 1 2 4 6 8
