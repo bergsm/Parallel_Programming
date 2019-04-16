@@ -149,6 +149,7 @@ main( int argc, char *argv[ ] )
         fp = fopen("prob.txt", "w+");
         //TODO print speedup and parallel fraction?
         fprintf(fp, "%4.4lf", currentProb);
+        fclose(fp);
     }
     return 0;
 }
