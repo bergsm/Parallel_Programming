@@ -125,24 +125,45 @@ main( int argc, char *argv[ ] )
     float maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
     float volume;              // must be declared outside the NUMTRIES loop
 
+    float fullTileArea = ((( XMAX - XMIN )/(float)(NUMNODES-1)) * (( YMAX - YMIN ) /(float)(NUMNODES-1)));
+
         // looking for the maximum performance:
     for( int t = 0; t < NUMTRIES; t++ )
     {
         double time0 = omp_get_wtime( );
 
-        //TODO pragma line not complete
+        //TODO pragma line not complete need to reduce into volume
         #pragma omp parallel for default(none)
         for( int i = 0; i < NUMNODES*NUMNODES; i++ )
         {
             int iu = i % NUMNODES;
             int iv = i / NUMNODES;
 
-            . . .
+            float height = height(iu, iv);
+            float area = 0.;
+
+            //TODO decipher whether iu, iv is a corner, edge, or middle node
+            // corner case
+            if ((iu == 0 && iv == 0) || (iu == NUMNODES-1 && iv == NUMNODES-1))
+            {
+                area = .25 * fullTileArea;
+            }
+            // edge case
+            else if ((iu == 0 || iv == 0) || (iu == NUMNODES-1 || iv == NUMNODES-1))
+            {
+                area = .5 * fullTileArea;
+            }
+            else
+            {
+                area = fullTileArea;
+            }
+            //TODO reduction
+            volume += area * height;
         }
 
         double time1 = omp_get_wtime( );
         //TODO NUMNODES*NUMNODES for numerator?
-        double megaTrialsPerSecond = (double)NUMNODES / ( time1 - time0 ) / 1000000.;
+        double megaTrialsPerSecond = (double)(NUMNODES*NUMNODES) / ( time1 - time0 ) / 1000000.;
         if( megaTrialsPerSecond > maxPerformance )
             maxPerformance = megaTrialsPerSecond;
     }
