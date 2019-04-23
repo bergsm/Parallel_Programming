@@ -1,8 +1,9 @@
 *.gdoc
 proj0
 proj1
-output.txt
-output.csv
+proj2
+*.csv
 *.txt
 *.gcp.*
 *.gsheet
+*.swp

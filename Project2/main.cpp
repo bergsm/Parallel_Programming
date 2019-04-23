@@ -10,8 +10,8 @@
 #endif
 
 // for printing probability
-#ifndef LAST
-#define LAST        0
+#ifndef FIRST
+#define FIRST        0
 #endif
 
 // setting the number of trials in the monte carlo simulation:
@@ -112,8 +112,6 @@ Height( int iu, int iv )    // iu,iv = 0 .. NUMNODES-1
 int
 main( int argc, char *argv[ ] )
 {
-    FILE *fp;
-
 #ifndef _OPENMP
     fprintf( stderr, "No OpenMP support!\n" );
     return 1;
@@ -133,13 +131,13 @@ main( int argc, char *argv[ ] )
         double time0 = omp_get_wtime( );
 
         //TODO pragma line not complete need to reduce into volume
-        #pragma omp parallel for default(none)
+        #pragma omp parallel for default(none) shared(fullTileArea) reduction(+:volume)
         for( int i = 0; i < NUMNODES*NUMNODES; i++ )
         {
             int iu = i % NUMNODES;
             int iv = i / NUMNODES;
 
-            float height = height(iu, iv);
+            float height = Height(iu, iv);
             float area = 0.;
 
             //TODO decipher whether iu, iv is a corner, edge, or middle node
@@ -173,13 +171,13 @@ main( int argc, char *argv[ ] )
     //TODO print volumes to same spreadsheet, just further down or to separate file
     // but still print all the results and the associated NUMNODES, not just the
     // last value
-    if (LAST)
-    {
-        FILE* fp;
-        fp = fopen("volume.txt", "w+");
-        //TODO print speedup and parallel fraction?
-        fprintf(fp, "%4.4lf", volume);
-        fclose(fp);
-    }
+    FILE* fp;
+    if (FIRST)
+        fp = fopen("volume.csv", "w+");
+    else
+        fp = fopen("volume.csv", "a+");
+    fprintf(fp, "%d, %4.4lf", NUMNODES, volume);
+    fclose(fp);
+    //TODO print speedup and parallel fraction?
     return 0;
 }
