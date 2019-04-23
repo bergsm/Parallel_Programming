@@ -1,24 +1,22 @@
 #~/bin/bash
 
 machine=$(uname)
-alias macCompile='g++-8 -DNUMT=$threads -DNUMNODES=$nodes -DFIRST=$first -o proj2 main.cpp -lm -fopenmp'
-alias linuxCompile='g++ -DNUMT=$threads -DNUMNODES=$nodes -DFIRST=$first -o proj2 main.cpp -lm -fopenmp'
-first=1
+alias macCompile='g++-8 -DNUMT=$threads -DNUMNODES=$nodes -DLAST=$last -o proj2 main.cpp -lm -fopenmp'
+alias linuxCompile='g++ -DNUMT=$threads -DNUMNODES=$nodes -DLAST=$last -o proj2 main.cpp -lm -fopenmp'
+last=0
 
 rm output.csv
 rm volume.csv
-echo " , 4, 10, 50, 100, 500, 1000, 2000 4000" >> output.csv
-#echo " , 1, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000" >> output.csv
+echo " , 4, 10, 50, 100, 250, 500, 1000, 2500, 5000, 7500, 10000" >> output.csv
 
-for threads in 1 2 4 6 8
+for threads in 1 2 4 6 8 12 16 24
 do
+    if [ "$threads" -eq "24" ]; then
+        last=1
+    fi
     printf "$threads, " >> output.csv
-    for nodes in 4 10 50 100 500 1000 2000 4000
-    #for nodes in 1 10 50 100 500 1000 5000 10000 50000 100000 500000 1000000 5000000
+    for nodes in 4 10 50 100 250 500 1000 2500 5000 7500 10000
     do
-        if [ "$threads" -ne "1" ] || [ "$nodes" -ne "1" ]; then
-            first=0
-        fi
         printf "Threads: %s, Nodes: %s\n" "$threads" "$nodes"
         if [ "$machine" = "Darwin" ]; then
             macCompile

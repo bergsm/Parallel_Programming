@@ -9,9 +9,9 @@
 #define NUMT        1
 #endif
 
-// for printing probability
-#ifndef FIRST
-#define FIRST        0
+// for printing volume
+#ifndef LAST
+#define LAST        0
 #endif
 
 // setting the number of trials in the monte carlo simulation:
@@ -167,10 +167,13 @@ main( int argc, char *argv[ ] )
     //print results
     printf("%8.2lf, ",maxPerformance);
 
-    FILE* fp;
-    fp = fopen("volume.csv", "a+");
-    fprintf(fp, "%d, %4.4lf\n", NUMNODES, volume);
-    fclose(fp);
+    if (LAST)
+    {
+        FILE* fp;
+        fp = fopen("volume.csv", "a+");
+        fprintf(fp, "%d, %4.4lf\n", NUMNODES, volume);
+        fclose(fp);
+    }
     //TODO print speedup and parallel fraction?
     return 0;
 }
