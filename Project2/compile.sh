@@ -7,7 +7,7 @@ first=1
 
 rm output.csv
 rm volume.csv
-echo " , 4, 10, 50, 100, 500, 1000, 2000 4000" >> output.csv
+echo " , 4, 10, 50, 100, 500, 1000, 2000, 4000" >> output.csv
 #echo " , 1, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000" >> output.csv
 
 for threads in 1 2 4 6 8
