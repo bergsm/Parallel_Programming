@@ -8,7 +8,6 @@ last=0
 rm output.csv
 rm volume.csv
 echo " , 4, 10, 50, 100, 250, 500, 1000, 2500, 5000, 7500, 10000" >> output.csv
-
 for threads in 1 2 4 6 8 12 16 24
 do
     if [ "$threads" -eq "24" ]; then
