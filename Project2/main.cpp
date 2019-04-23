@@ -71,33 +71,33 @@
 #define BOTZ33  -3.
 
 
-float
+double
 Height( int iu, int iv )    // iu,iv = 0 .. NUMNODES-1
 {
-    float u = (float)iu / (float)(NUMNODES-1);
-    float v = (float)iv / (float)(NUMNODES-1);
+    double u = (double)iu / (double)(NUMNODES-1);
+    double v = (double)iv / (double)(NUMNODES-1);
 
     // the basis functions:
 
-    float bu0 = (1.-u) * (1.-u) * (1.-u);
-    float bu1 = 3. * u * (1.-u) * (1.-u);
-    float bu2 = 3. * u * u * (1.-u);
-    float bu3 = u * u * u;
+    double bu0 = (1.-u) * (1.-u) * (1.-u);
+    double bu1 = 3. * u * (1.-u) * (1.-u);
+    double bu2 = 3. * u * u * (1.-u);
+    double bu3 = u * u * u;
 
-    float bv0 = (1.-v) * (1.-v) * (1.-v);
-    float bv1 = 3. * v * (1.-v) * (1.-v);
-    float bv2 = 3. * v * v * (1.-v);
-    float bv3 = v * v * v;
+    double bv0 = (1.-v) * (1.-v) * (1.-v);
+    double bv1 = 3. * v * (1.-v) * (1.-v);
+    double bv2 = 3. * v * v * (1.-v);
+    double bv3 = v * v * v;
 
     // finally, we get to compute something:
 
 
-        float top =       bu0 * ( bv0*TOPZ00 + bv1*TOPZ01 + bv2*TOPZ02 + bv3*TOPZ03 )
+        double top =       bu0 * ( bv0*TOPZ00 + bv1*TOPZ01 + bv2*TOPZ02 + bv3*TOPZ03 )
                         + bu1 * ( bv0*TOPZ10 + bv1*TOPZ11 + bv2*TOPZ12 + bv3*TOPZ13 )
                         + bu2 * ( bv0*TOPZ20 + bv1*TOPZ21 + bv2*TOPZ22 + bv3*TOPZ23 )
                         + bu3 * ( bv0*TOPZ30 + bv1*TOPZ31 + bv2*TOPZ32 + bv3*TOPZ33 );
 
-        float bot =       bu0 * ( bv0*BOTZ00 + bv1*BOTZ01 + bv2*BOTZ02 + bv3*BOTZ03 )
+        double bot =       bu0 * ( bv0*BOTZ00 + bv1*BOTZ01 + bv2*BOTZ02 + bv3*BOTZ03 )
                         + bu1 * ( bv0*BOTZ10 + bv1*BOTZ11 + bv2*BOTZ12 + bv3*BOTZ13 )
                         + bu2 * ( bv0*BOTZ20 + bv1*BOTZ21 + bv2*BOTZ22 + bv3*BOTZ23 )
                         + bu3 * ( bv0*BOTZ30 + bv1*BOTZ31 + bv2*BOTZ32 + bv3*BOTZ33 );
@@ -119,11 +119,11 @@ main( int argc, char *argv[ ] )
 
     omp_set_num_threads( NUMT );    // set the number of threads to use in the for-loop:`
 
-    // get ready to record the maximum performance and the probability:
-    float maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
-    float volume;              // must be declared outside the NUMTRIES loop
+    // get ready to record the maximum performance and the volume:
+    double maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
+    double volume = 0;              // must be declared outside the NUMTRIES loop
 
-    float fullTileArea = ((( XMAX - XMIN )/(float)(NUMNODES-1)) * (( YMAX - YMIN ) /(float)(NUMNODES-1)));
+    double fullTileArea = ((( XMAX - XMIN )/(double)(NUMNODES-1)) * (( YMAX - YMIN ) /(double)(NUMNODES-1)));
 
         // looking for the maximum performance:
     for( int t = 0; t < NUMTRIES; t++ )
@@ -137,8 +137,8 @@ main( int argc, char *argv[ ] )
             int iu = i % NUMNODES;
             int iv = i / NUMNODES;
 
-            float height = Height(iu, iv);
-            float area = 0.;
+            double height = Height(iu, iv);
+            double area = 0.;
 
             //TODO decipher whether iu, iv is a corner, edge, or middle node
             // corner case
@@ -155,28 +155,21 @@ main( int argc, char *argv[ ] )
             {
                 area = fullTileArea;
             }
-            //TODO reduction
             volume += area * height;
         }
 
         double time1 = omp_get_wtime( );
-        //TODO NUMNODES*NUMNODES for numerator?
         double megaTrialsPerSecond = (double)(NUMNODES*NUMNODES) / ( time1 - time0 ) / 1000000.;
         if( megaTrialsPerSecond > maxPerformance )
             maxPerformance = megaTrialsPerSecond;
     }
+    volume = volume / NUMTRIES;
     //print results
     printf("%8.2lf, ",maxPerformance);
 
-    //TODO print volumes to same spreadsheet, just further down or to separate file
-    // but still print all the results and the associated NUMNODES, not just the
-    // last value
     FILE* fp;
-    if (FIRST)
-        fp = fopen("volume.csv", "w+");
-    else
-        fp = fopen("volume.csv", "a+");
-    fprintf(fp, "%d, %4.4lf", NUMNODES, volume);
+    fp = fopen("volume.csv", "a+");
+    fprintf(fp, "%d, %4.4lf\n", NUMNODES, volume);
     fclose(fp);
     //TODO print speedup and parallel fraction?
     return 0;
