@@ -1,4 +1,14 @@
 *.gdoc
-*.pdf
+proj0
+Project1
+proj2
+proj3
+*.csv
+*.txt
 *.zip
-hello
+*.pdf
+*.gcp.*
+*.gsheet
+*.swp
+Week*
+helloOpenMP
