@@ -4,176 +4,247 @@
 #include <omp.h>
 #include <stdio.h>
 
-// setting the number of threads:
-#ifndef NUMT
-#define NUMT        1
-#endif
+//Globals
+int NowYear;        // 2019 - 2024
+int NowMonth;       // 0 - 11
+int totalMonths;
 
-// for printing volume
-#ifndef LAST
-#define LAST        0
-#endif
+float   NowPrecip;      // inches of rain per month
+float   NowTemp;        // temperature this month
+float   NowHeight;      // grain height in inches
+int NowNumDeer;     // number of deer in the current population
 
-// setting the number of trials in the monte carlo simulation:
-#ifndef NUMNODES
-#define NUMNODES   1000000
-#endif
+// constant values
+const float GRAIN_GROWS_PER_MONTH =     8.0;
+const float ONE_DEER_EATS_PER_MONTH =   0.5;
 
-// how many tries to discover the maximum performance:
-#ifndef NUMTRIES
-#define NUMTRIES    100
-#endif
+const float AVG_PRECIP_PER_MONTH =      6.0;    // average
+const float AMP_PRECIP_PER_MONTH =      6.0;    // plus or minus
+const float RANDOM_PRECIP =             2.0;    // plus or minus noise
 
+const float AVG_TEMP =              50.0;   // average
+const float AMP_TEMP =              20.0;   // plus or minus
+const float RANDOM_TEMP =           10.0;   // plus or minus noise
 
-#define XMIN     0.
-#define XMAX     3.
-#define YMIN     0.
-#define YMAX     3.
-
-#define TOPZ00  0.
-#define TOPZ10  1.
-#define TOPZ20  0.
-#define TOPZ30  0.
-
-#define TOPZ01   1.
-#define TOPZ11  12.
-#define TOPZ21   1.
-#define TOPZ31   0.
-
-#define TOPZ02  0.
-#define TOPZ12  1.
-#define TOPZ22  0.
-#define TOPZ32  4.
-
-#define TOPZ03  3.
-#define TOPZ13  2.
-#define TOPZ23  3.
-#define TOPZ33  3.
-
-#define BOTZ00  0.
-#define BOTZ10  -3.
-#define BOTZ20  0.
-#define BOTZ30  0.
-
-#define BOTZ01  -2.
-#define BOTZ11  10.
-#define BOTZ21  -2.
-#define BOTZ31  0.
-
-#define BOTZ02  0.
-#define BOTZ12  -5.
-#define BOTZ22  0.
-#define BOTZ32  -6.
-
-#define BOTZ03  -3.
-#define BOTZ13   2.
-#define BOTZ23  -8.
-#define BOTZ33  -3.
+const float MIDTEMP =               40.0;
+const float MIDPRECIP =             10.0;
 
 
-double
-Height( int iu, int iv )    // iu,iv = 0 .. NUMNODES-1
+//random float generators
+float
+Ranf( unsigned int *seedp,  float low, float high )
 {
-    double u = (double)iu / (double)(NUMNODES-1);
-    double v = (double)iv / (double)(NUMNODES-1);
+        float r = (float) rand_r( seedp );              // 0 - RAND_MAX
 
-    // the basis functions:
-
-    double bu0 = (1.-u) * (1.-u) * (1.-u);
-    double bu1 = 3. * u * (1.-u) * (1.-u);
-    double bu2 = 3. * u * u * (1.-u);
-    double bu3 = u * u * u;
-
-    double bv0 = (1.-v) * (1.-v) * (1.-v);
-    double bv1 = 3. * v * (1.-v) * (1.-v);
-    double bv2 = 3. * v * v * (1.-v);
-    double bv3 = v * v * v;
-
-    // finally, we get to compute something:
-
-
-        double top =       bu0 * ( bv0*TOPZ00 + bv1*TOPZ01 + bv2*TOPZ02 + bv3*TOPZ03 )
-                        + bu1 * ( bv0*TOPZ10 + bv1*TOPZ11 + bv2*TOPZ12 + bv3*TOPZ13 )
-                        + bu2 * ( bv0*TOPZ20 + bv1*TOPZ21 + bv2*TOPZ22 + bv3*TOPZ23 )
-                        + bu3 * ( bv0*TOPZ30 + bv1*TOPZ31 + bv2*TOPZ32 + bv3*TOPZ33 );
-
-        double bot =       bu0 * ( bv0*BOTZ00 + bv1*BOTZ01 + bv2*BOTZ02 + bv3*BOTZ03 )
-                        + bu1 * ( bv0*BOTZ10 + bv1*BOTZ11 + bv2*BOTZ12 + bv3*BOTZ13 )
-                        + bu2 * ( bv0*BOTZ20 + bv1*BOTZ21 + bv2*BOTZ22 + bv3*BOTZ23 )
-                        + bu3 * ( bv0*BOTZ30 + bv1*BOTZ31 + bv2*BOTZ32 + bv3*BOTZ33 );
-
-        return top - bot;   // if the bottom surface sticks out above the top surface
-                // then that contribution to the overall volume is negative
+        return(   low  +  r * ( high - low ) / (float)RAND_MAX   );
 }
 
 
+int
+Ranf( unsigned int *seedp, int ilow, int ihigh )
+{
+        float low = (float)ilow;
+        float high = (float)ihigh + 0.9999f;
+
+        return (int)(  Ranf(seedp, low,high) );
+}
+
+float
+SQR( float x)
+{
+    return x*x;
+}
+
+
+
+void Weather(unsigned int seed)
+{
+        float tempFactor = exp ( -SQR( ( NowTemp - MIDTEMP ) / 10. ) );
+        float precipFactor = exp( -SQR( ( NowPrecip - MIDPRECIP ) / 10. ) );
+
+        float ang = (  30.*(float)NowMonth + 15.  ) * ( M_PI / 180. );
+
+        float temp = AVG_TEMP - AMP_TEMP * cos( ang );
+        NowTemp = temp + Ranf( &seed, -RANDOM_TEMP, RANDOM_TEMP );
+
+        float precip = AVG_PRECIP_PER_MONTH + AMP_PRECIP_PER_MONTH * sin( ang );
+        NowPrecip = precip + Ranf( &seed,  -RANDOM_PRECIP, RANDOM_PRECIP );
+        if( NowPrecip < 0. )
+            NowPrecip = 0.;
+}
+
+// simulation functions
+void GrainDeer()
+{
+    while (NowYear < 2025)
+    {
+        int NextNumDeer;
+        // compute a temporary next-value for this quantity
+        // based on the current state of the simulation:
+        if (NowNumDeer > NowHeight)
+            NextNumDeer = NowNumDeer - 1;
+        else if (NowNumDeer < NowHeight)
+            NextNumDeer = NowNumDeer + 1;
+        else
+            NextNumDeer = NowNumDeer;
+        // DoneComputing barrier:
+        #pragma omp barrier
+
+        //Assign temp variable to global variable
+        NowNumDeer = NextNumDeer;
+        // DoneAssigning barrier:
+        #pragma omp barrier
+
+        // Wait for watcher to update and print data
+
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
+
+
+void Grain()
+{
+    while (NowYear < 2025)
+    {
+        float tempFactor = exp ( -SQR( ( NowTemp - MIDTEMP ) / 10. ) );
+        float precipFactor = exp( -SQR( ( NowPrecip - MIDPRECIP ) / 10. ) );
+        float NextHeight = 0.;
+        // compute a temporary next-value for this quantity
+        // based on the current state of the simulation:
+        NextHeight += tempFactor * precipFactor * GRAIN_GROWS_PER_MONTH;
+        NextHeight -= (float)NowNumDeer * ONE_DEER_EATS_PER_MONTH;
+
+
+        // DoneComputing barrier:
+        #pragma omp barrier
+        NowHeight += NextHeight;
+        if (NowHeight < 0)
+            NowHeight = 0.;
+
+        // DoneAssigning barrier:
+        #pragma omp barrier
+
+        // Wait for watcher to update and print data
+
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
+
+
+void Watcher(unsigned int seed)
+{
+    while (NowYear < 2025)
+    {
+        // compute a temporary next-value for this quantity
+        // based on the current state of the simulation:
+
+        // Wait for values to calculate
+
+        // DoneComputing barrier:
+        #pragma omp barrier
+
+        // Wait for values to assign
+
+        // DoneAssigning barrier:
+        #pragma omp barrier
+
+        //Print results
+
+        totalMonths++;
+        printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, (5./9.)*(NowTemp-32), NowPrecip*2.54, NowHeight*2.54, NowNumDeer);
+        //Uncomment for US units
+        //printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, NowTemp, NowPrecip, NowHeight, NowNumDeer);
+
+        NowMonth++;
+        if(NowMonth > 11)
+        {
+            NowYear++;
+            NowMonth = 0;
+        }
+
+        //Calculate current environment parameters
+        Weather(seed);
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
+
+
+void MyAgent()
+{
+    while (NowYear < 2025)
+    {
+        // compute a temporary next-value for this quantity
+        // based on the current state of the simulation:
+
+        // DoneComputing barrier:
+        #pragma omp barrier
+
+        // DoneAssigning barrier:
+        #pragma omp barrier
+
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
 
 // main program:
 int
 main( int argc, char *argv[ ] )
 {
-#ifndef _OPENMP
+    unsigned int seed = time(NULL);  // a thread-private variable
+    #ifndef _OPENMP
     fprintf( stderr, "No OpenMP support!\n" );
     return 1;
-#endif
+    #endif
 
-    omp_set_num_threads( NUMT );    // set the number of threads to use in the for-loop:`
+    //TODO set to 4 after introducing personal agent
+    omp_set_num_threads( 3 );    // set the number of threads to use for sections
 
-    // get ready to record the maximum performance and the volume:
-    double maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
-    double volume = 0;              // must be declared outside the NUMTRIES loop
+    //Calculate current environment parameters
+    Weather(seed);
 
-    double fullTileArea = ((( XMAX - XMIN )/(double)(NUMNODES-1)) * (( YMAX - YMIN ) /(double)(NUMNODES-1)));
+    // starting date and time:
+    NowMonth =    0;
+    totalMonths =    0;
+    NowYear  = 2019;
 
-        // looking for the maximum performance:
-    for( int t = 0; t < NUMTRIES; t++ )
+    // starting state (feel free to change this if you want):
+    NowNumDeer = 1;
+    NowHeight =  1.;
+
+    printf("Month, Temp, Precip, Height, Deer Pop\n");
+    // Uncomment for US units
+    //printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, NowTemp, NowPrecip, NowHeight, NowNumDeer);
+    printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, (5./9.)*(NowTemp-32), NowPrecip*2.54, NowHeight*2.54, NowNumDeer);
+
+    #pragma omp parallel sections
     {
-        double time0 = omp_get_wtime( );
-
-        //TODO pragma line not complete need to reduce into volume
-        #pragma omp parallel for default(none) shared(fullTileArea) reduction(+:volume)
-        for( int i = 0; i < NUMNODES*NUMNODES; i++ )
+        #pragma omp section
         {
-            int iu = i % NUMNODES;
-            int iv = i / NUMNODES;
-
-            double height = Height(iu, iv);
-            double area = 0.;
-
-            //TODO decipher whether iu, iv is a corner, edge, or middle node
-            // corner case
-            if ((iu == 0 || iu == NUMNODES-1) && (iv == 0 || iu == NUMNODES-1))
-            {
-                area = .25 * fullTileArea;
-            }
-            // edge case
-            else if ((iu == 0 || iv == 0) || (iu == NUMNODES-1 || iv == NUMNODES-1))
-            {
-                area = .5 * fullTileArea;
-            }
-            else
-            {
-                area = fullTileArea;
-            }
-            volume += area * height;
+            GrainDeer( );
         }
 
-        double time1 = omp_get_wtime( );
-        double megaTrialsPerSecond = (double)(NUMNODES*NUMNODES) / ( time1 - time0 ) / 1000000.;
-        if( megaTrialsPerSecond > maxPerformance )
-            maxPerformance = megaTrialsPerSecond;
-    }
-    volume = volume / NUMTRIES;
-    //print results
-    printf("%8.2lf, ",maxPerformance);
+        #pragma omp section
+        {
+            Grain( );
+        }
 
-    if (LAST)
-    {
-        FILE* fp;
-        fp = fopen("volume.csv", "a+");
-        fprintf(fp, "%d, %4.4lf\n", NUMNODES, volume);
-        fclose(fp);
-    }
-    //TODO print speedup and parallel fraction?
-    return 0;
+        #pragma omp section
+        {
+            Watcher(seed);
+        }
+
+        //TODO implement
+        //#pragma omp section
+        //{
+        //    MyAgent( ); // your own
+        //}
+    }       // implied barrier -- all functions must return in order
+        // to allow any of them to get past here
+
+
+   return 0;
 }
