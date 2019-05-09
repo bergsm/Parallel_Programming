@@ -13,8 +13,10 @@ float   NowPrecip;      // inches of rain per month
 float   NowTemp;        // temperature this month
 float   NowHeight;      // grain height in inches
 int NowNumDeer;     // number of deer in the current population
+float NowFertilizer; // Amount of fertilizer from deer in the soil
 
 // constant values
+const int YEAR_END = 2100;
 const float GRAIN_GROWS_PER_MONTH =     8.0;
 const float ONE_DEER_EATS_PER_MONTH =   0.5;
 
@@ -76,12 +78,12 @@ void Weather(unsigned int seed)
 // simulation functions
 void GrainDeer()
 {
-    while (NowYear < 2025)
+    while (NowYear < YEAR_END)
     {
         int NextNumDeer;
         // compute a temporary next-value for this quantity
         // based on the current state of the simulation:
-        if (NowNumDeer > NowHeight)
+        if (NowNumDeer > NowHeight || (NowFertilizer > NowNumDeer && NowNumDeer > 0))
             NextNumDeer = NowNumDeer - 1;
         else if (NowNumDeer < NowHeight)
             NextNumDeer = NowNumDeer + 1;
@@ -92,6 +94,8 @@ void GrainDeer()
 
         //Assign temp variable to global variable
         NowNumDeer = NextNumDeer;
+        if (NowNumDeer < 0)
+            NowNumDeer = 0;
         // DoneAssigning barrier:
         #pragma omp barrier
 
@@ -105,7 +109,7 @@ void GrainDeer()
 
 void Grain()
 {
-    while (NowYear < 2025)
+    while (NowYear < YEAR_END)
     {
         float tempFactor = exp ( -SQR( ( NowTemp - MIDTEMP ) / 10. ) );
         float precipFactor = exp( -SQR( ( NowPrecip - MIDPRECIP ) / 10. ) );
@@ -113,6 +117,7 @@ void Grain()
         // compute a temporary next-value for this quantity
         // based on the current state of the simulation:
         NextHeight += tempFactor * precipFactor * GRAIN_GROWS_PER_MONTH;
+        NextHeight += .05 * NowFertilizer * GRAIN_GROWS_PER_MONTH;
         NextHeight -= (float)NowNumDeer * ONE_DEER_EATS_PER_MONTH;
 
 
@@ -132,10 +137,34 @@ void Grain()
     }
 }
 
+void MyAgent()
+{
+    while (NowYear < YEAR_END)
+    {
+        // compute a temporary next-value for this quantity
+        // based on the current state of the simulation:
+        float NextFertilizer = .4 * NowNumDeer - .2 * NowHeight;
+
+        // DoneComputing barrier:
+        #pragma omp barrier
+        NowFertilizer += NextFertilizer;
+        if (NowFertilizer < 0)
+            NowFertilizer = 0.;
+
+        // DoneAssigning barrier:
+        #pragma omp barrier
+
+        // Wait for watcher function
+
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
+
 
 void Watcher(unsigned int seed)
 {
-    while (NowYear < 2025)
+    while (NowYear < YEAR_END)
     {
         // compute a temporary next-value for this quantity
         // based on the current state of the simulation:
@@ -153,9 +182,9 @@ void Watcher(unsigned int seed)
         //Print results
 
         totalMonths++;
-        printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, (5./9.)*(NowTemp-32), NowPrecip*2.54, NowHeight*2.54, NowNumDeer);
+    printf("%d,%6.4lf,%6.4lf,%6.4lf,%d,%6.4lf\n", totalMonths, (5./9.)*(NowTemp-32), NowPrecip*2.54, NowHeight*2.54, NowNumDeer, NowFertilizer);
         //Uncomment for US units
-        //printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, NowTemp, NowPrecip, NowHeight, NowNumDeer);
+        //printf("%d,%6.4lf,%6.4lf,%6.4lf,%d,%6.4lf\n", totalMonths, NowTemp, NowPrecip, NowHeight, NowNumDeer, NowFertilizer);
 
         NowMonth++;
         if(NowMonth > 11)
@@ -172,24 +201,6 @@ void Watcher(unsigned int seed)
 }
 
 
-void MyAgent()
-{
-    while (NowYear < 2025)
-    {
-        // compute a temporary next-value for this quantity
-        // based on the current state of the simulation:
-
-        // DoneComputing barrier:
-        #pragma omp barrier
-
-        // DoneAssigning barrier:
-        #pragma omp barrier
-
-        // DonePrinting barrier:
-        #pragma omp barrier
-    }
-}
-
 // main program:
 int
 main( int argc, char *argv[ ] )
@@ -200,8 +211,7 @@ main( int argc, char *argv[ ] )
     return 1;
     #endif
 
-    //TODO set to 4 after introducing personal agent
-    omp_set_num_threads( 3 );    // set the number of threads to use for sections
+    omp_set_num_threads( 4 );    // set the number of threads to use for sections
 
     //Calculate current environment parameters
     Weather(seed);
@@ -214,11 +224,12 @@ main( int argc, char *argv[ ] )
     // starting state (feel free to change this if you want):
     NowNumDeer = 1;
     NowHeight =  1.;
+    NowFertilizer = 0.;
 
-    printf("Month, Temp, Precip, Height, Deer Pop\n");
+    printf("Month, Temp, Precip, Height, Deer Pop, Fertilizer\n");
     // Uncomment for US units
-    //printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, NowTemp, NowPrecip, NowHeight, NowNumDeer);
-    printf("%d,%6.4lf,%6.4lf,%6.4lf,%d\n", totalMonths, (5./9.)*(NowTemp-32), NowPrecip*2.54, NowHeight*2.54, NowNumDeer);
+    //printf("%d,%6.4lf,%6.4lf,%6.4lf,%d,%6.4lf\n", totalMonths, NowTemp, NowPrecip, NowHeight, NowNumDeer, NowFertilizer);
+    printf("%d,%6.4lf,%6.4lf,%6.4lf,%d,%6.4lf\n", totalMonths, (5./9.)*(NowTemp-32), NowPrecip*2.54, NowHeight*2.54, NowNumDeer, NowFertilizer);
 
     #pragma omp parallel sections
     {
@@ -237,11 +248,10 @@ main( int argc, char *argv[ ] )
             Watcher(seed);
         }
 
-        //TODO implement
-        //#pragma omp section
-        //{
-        //    MyAgent( ); // your own
-        //}
+        #pragma omp section
+        {
+            MyAgent( ); // your own
+        }
     }       // implied barrier -- all functions must return in order
         // to allow any of them to get past here
 
