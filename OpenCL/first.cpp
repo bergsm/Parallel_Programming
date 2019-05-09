@@ -11,10 +11,10 @@
 #endif
 #include <omp.h>
 
-//#include "CL/cl.h"
-//#include "CL/cl_platform.h"
-#include "OpenCL/cl.h"
-#include "OpenCL/cl_platform.h"
+#include "CL/cl.h"
+#include "CL/cl_platform.h"
+//#include "OpenCL/cl.h"
+//#include "OpenCL/cl_platform.h"
 
 
 #ifndef NMB
