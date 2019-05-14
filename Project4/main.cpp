@@ -69,7 +69,8 @@ main( int argc, char *argv[ ] )
             maxPerformance = megaTrialsPerSecond;
     }
     //print results
-    printf("%8.2lf, ",maxPerformance);
+    double simdMulPerf = maxPerformance;
+    //printf("%8.2lf, ",maxPerformance);
 
     //SIMD multiplaction and reduction
     maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
@@ -89,7 +90,8 @@ main( int argc, char *argv[ ] )
             maxPerformance = megaTrialsPerSecond;
     }
     //print results
-    printf("%8.2lf, ",maxPerformance);
+    double simdMulSumPerf = maxPerformance;
+    //printf("%8.2lf, ",maxPerformance);
 
     //Normal multiplaction
     maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
@@ -108,7 +110,8 @@ main( int argc, char *argv[ ] )
             maxPerformance = megaTrialsPerSecond;
     }
     //print results
-    printf("%8.2lf, ",maxPerformance);
+    double NonsimdMulPerf = maxPerformance;
+    printf("%8.2lf, ",simdMulPerf/NonsimdMulPerf);
 
     //Normal multiplaction and reduction
     maxPerformance = 0.;      // must be declared outside the NUMTRIES loop
@@ -127,7 +130,8 @@ main( int argc, char *argv[ ] )
             maxPerformance = megaTrialsPerSecond;
     }
     //print results
-    printf("%8.2lf",maxPerformance);
+    double NonsimdMulSumPerf = maxPerformance;
+    printf("%8.2lf",simdMulSumPerf/NonsimdMulSumPerf);
 
     return 0;
 }
