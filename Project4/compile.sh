@@ -7,7 +7,8 @@ alias macCompile='g++-8 -DARRSIZE=$arrsize -o $projName main.cpp simd.p4.cpp -lm
 alias linuxCompile='g++ -DARRSIZE=$arrsize -o $projName main.cpp simd.p4.cpp -lm -fopenmp'
 
 rm output.csv
-    for arrsize in 1000 10000 50000 100000 500000 1000000
+echo " , SIMD Mul, SIMD MulSum, NonSIMD Mul, NonSIMD MulSum" >> output.csv
+    for arrsize in 1000 10000 50000 100000 500000 1000000 2000000 5000000
     do
     printf "Array Size: %s\n" "$arrsize"
     printf "%s," "$arrsize" >> output.csv
