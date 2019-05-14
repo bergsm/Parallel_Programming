@@ -99,3 +99,13 @@ NonSimdMulSum( float *a, float *b, int len )
 
 	return sum[0];
 }
+
+void NonSimdMul( float *a, float *b, float *c, int len )
+{
+    for (int i=0; i < len; i++)
+ 	{
+		c[i] = a[i] * b[i];
+	}
+}
+
+
