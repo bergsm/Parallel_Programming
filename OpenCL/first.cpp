@@ -10,6 +10,7 @@
 #include <unistd.h>
 #endif
 #include <omp.h>
+#include "errorcodes.cpp"
 
 #include "CL/cl.h"
 #include "CL/cl_platform.h"
@@ -18,12 +19,14 @@
 
 
 #ifndef NMB
+//#define	NMB			32
 #define	NMB			64
 #endif
 
 #define NUM_ELEMENTS		NMB*1024*1024
 
 #ifndef LOCAL_SIZE
+//#define	LOCAL_SIZE		32
 #define	LOCAL_SIZE		64
 #endif
 
@@ -103,25 +106,30 @@ main( int argc, char *argv[ ] )
 
 	cl_mem dA = clCreateBuffer( context, CL_MEM_READ_ONLY,  dataSize, NULL, &status );
 	if( status != CL_SUCCESS )
-		fprintf( stderr, "clCreateBuffer failed (1)\n" );
+		//fprintf( stderr, "%d\tclCreateBuffer failed (1)\n", status );
+        PrintCLError(status, "error: ", stderr);
 
 	cl_mem dB = clCreateBuffer( context, CL_MEM_READ_ONLY,  dataSize, NULL, &status );
 	if( status != CL_SUCCESS )
-		fprintf( stderr, "clCreateBuffer failed (2)\n" );
+		//fprintf( stderr, "clCreateBuffer failed (2)\n" );
+        PrintCLError(status, "error: ", stderr);
 
 	cl_mem dC = clCreateBuffer( context, CL_MEM_WRITE_ONLY, dataSize, NULL, &status );
 	if( status != CL_SUCCESS )
-		fprintf( stderr, "clCreateBuffer failed (3)\n" );
+		//fprintf( stderr, "clCreateBuffer failed (3)\n" );
+        PrintCLError(status, "error: ", stderr);
 
 	// 6. enqueue the 2 commands to write the data from the host buffers to the device buffers:
 
 	status = clEnqueueWriteBuffer( cmdQueue, dA, CL_FALSE, 0, dataSize, hA, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
-		fprintf( stderr, "clEnqueueWriteBuffer failed (1)\n" );
+		//fprintf( stderr, "clEnqueueWriteBuffer failed (1)\n" );
+        PrintCLError(status, "error: ", stderr);
 
 	status = clEnqueueWriteBuffer( cmdQueue, dB, CL_FALSE, 0, dataSize, hB, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
-		fprintf( stderr, "clEnqueueWriteBuffer failed (2)\n" );
+		//fprintf( stderr, "clEnqueueWriteBuffer failed (2)\n" );
+        PrintCLError(status, "error: ", stderr);
 
 	Wait( cmdQueue );
 
@@ -193,7 +201,8 @@ main( int argc, char *argv[ ] )
 
 	status = clEnqueueNDRangeKernel( cmdQueue, kernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
-		fprintf( stderr, "clEnqueueNDRangeKernel failed: %d\n", status );
+		//fprintf( stderr, "clEnqueueNDRangeKernel failed: %d\n", status );
+        PrintCLError(status, "error: ", stderr);
 
 	Wait( cmdQueue );
 	double time1 = omp_get_wtime( );
@@ -202,7 +211,8 @@ main( int argc, char *argv[ ] )
 
 	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, dataSize, hC, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
-			fprintf( stderr, "clEnqueueReadBuffer failed\n" );
+			//fprintf( stderr, "clEnqueueReadBuffer failed\n" );
+            PrintCLError(status, "error: ", stderr);
 
 	// did it work?
 
