@@ -12,5 +12,5 @@ proj4
 *.gsheet
 *.swp
 Week*
-helloOpenMP
-OpenCL
+first
+hello

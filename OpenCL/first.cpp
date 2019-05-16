@@ -19,15 +19,15 @@
 
 
 #ifndef NMB
-//#define	NMB			32
-#define	NMB			64
+#define	NMB			32
+//#define	NMB			64
 #endif
 
 #define NUM_ELEMENTS		NMB*1024*1024
 
 #ifndef LOCAL_SIZE
-//#define	LOCAL_SIZE		32
-#define	LOCAL_SIZE		64
+#define	LOCAL_SIZE		32
+//#define	LOCAL_SIZE		64
 #endif
 
 #define	NUM_WORK_GROUPS		NUM_ELEMENTS/LOCAL_SIZE
