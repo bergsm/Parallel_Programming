@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "cl.h"
+#include "CL/cl.h"
 
 
 struct errorcode

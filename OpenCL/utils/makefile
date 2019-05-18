@@ -1,2 +1,2 @@
 all:
-	g++-8 -o printinfo printinfo.cpp -lm -framework OpenCL -fopenmp
+	g++ -o printinfo printinfo.cpp -lm -lOpenCL -fopenmp

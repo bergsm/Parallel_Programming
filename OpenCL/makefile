@@ -1,2 +1,2 @@
 all:
-	g++-9 -o first first.cpp -lm -framework OpenCL -fopenmp
+	g++ -o first first.cpp -lm -lOpenCL -fopenmp
