@@ -1,6 +1,6 @@
 all:
 	./compile.sh
-reduce:
+red:
 	./compRed.sh
 clean:
 	rm proj*
