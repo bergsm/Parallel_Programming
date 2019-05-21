@@ -249,8 +249,7 @@ main( int argc, char *argv[ ] )
 
 	fprintf( stderr, "Elements: %8d\tWork Group Size: %4d\tWork Groups: %10d\t%10.3lf GigaMultsPerSecond\n",
 		NUM_ELEMENTS, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
-	printf( "Elements: %8d\tWork Group Size: %4d\tWork Groups: %10d\t%10.3lf GigaMultsPerSecond\n",
-		NUM_ELEMENTS, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
+	printf( "%10.3lf,", (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
 
 #ifdef WIN32
 	Sleep( 2000 );
