@@ -24,7 +24,7 @@
 #endif
 
 //#define NUM_ELEMENTS		NMB*1024*1024
-#define NUM_ELEMENTS		8388608*2
+#define NUM_ELEMENTS		2097152*2*2*2
 
 #ifndef LOCAL_SIZE
 //#define	LOCAL_SIZE		32
@@ -224,10 +224,10 @@ main( int argc, char *argv[ ] )
 		float expected = hA[i] * hB[i];
 		if( fabs( hC[i] - expected ) > TOL )
 		{
-		//	fprintf( stderr, "%4d: %13.6f * %13.6f wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
-		//		i, hA[i], hB[i], hC[i], expected, fabs(hC[i]-expected) );
-		//	fprintf( stderr, "%4d:    0x%08x *    0x%08x wrongly produced    0x%08x instead of    0x%08x\n",
-		//		i, LookAtTheBits(hA[i]), LookAtTheBits(hB[i]), LookAtTheBits(hC[i]), LookAtTheBits(expected) );
+			//fprintf( stderr, "%4d: %13.6f * %13.6f wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
+			//	i, hA[i], hB[i], hC[i], expected, fabs(hC[i]-expected) );
+			//fprintf( stderr, "%4d:    0x%08x *    0x%08x wrongly produced    0x%08x instead of    0x%08x\n",
+			//	i, LookAtTheBits(hA[i]), LookAtTheBits(hB[i]), LookAtTheBits(hC[i]), LookAtTheBits(expected) );
 		}
 	}
 
