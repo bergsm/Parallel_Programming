@@ -1,2 +1,2 @@
 all:
-	g++ -o first first.cpp -lm -lOpenCL -fopenmp
+	g++ -o first first.cpp -Wno-write-strings -lm -lOpenCL -fopenmp
