@@ -20,20 +20,20 @@
 
 #ifndef NMB
 #define	NMB			32
-//#define	NMB			64
 #endif
 
 //#define NUM_ELEMENTS		NMB*1024*1024
+#ifndef NUM_ELEMENTS
 #define NUM_ELEMENTS		2097152*2*2*2
+#endif
 
 #ifndef LOCAL_SIZE
-//#define	LOCAL_SIZE		32
 #define	LOCAL_SIZE		64
 #endif
 
 #define	NUM_WORK_GROUPS		NUM_ELEMENTS/LOCAL_SIZE
 
-const char *			CL_FILE_NAME = { "first.cl" };
+const char *			CL_FILE_NAME = { "arrMultRed.cl" };
 const float			TOL = 0.0001f;
 
 void				Wait( cl_command_queue );
@@ -185,7 +185,11 @@ main( int argc, char *argv[ ] )
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clSetKernelArg failed (2)\n" );
 
-	status = clSetKernelArg( kernel, 2, sizeof(cl_mem), &dC );
+    status = clSetKernelArg( kernel, 2, LOCAL_SIZE * sizeof(float), NULL );
+	if( status != CL_SUCCESS )
+		fprintf( stderr, "clSetKernelArg failed (3)\n" );
+
+	status = clSetKernelArg( kernel, 3, sizeof(cl_mem), &dC );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clSetKernelArg failed (3)\n" );
 
@@ -217,22 +221,18 @@ main( int argc, char *argv[ ] )
 			fprintf( stderr, "clEnqueueReadBuffer failed\n %d", status );
             //PrintCLError(status, "error: ", stderr);
 
-	// did it work?
+    Wait( cmdQueue );
 
-	for( int i = 0; i < NUM_ELEMENTS; i++ )
-	{
-		float expected = hA[i] * hB[i];
-		if( fabs( hC[i] - expected ) > TOL )
-		{
-			//fprintf( stderr, "%4d: %13.6f * %13.6f wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
-			//	i, hA[i], hB[i], hC[i], expected, fabs(hC[i]-expected) );
-			//fprintf( stderr, "%4d:    0x%08x *    0x%08x wrongly produced    0x%08x instead of    0x%08x\n",
-			//	i, LookAtTheBits(hA[i]), LookAtTheBits(hB[i]), LookAtTheBits(hC[i]), LookAtTheBits(expected) );
-		}
-	}
+    float sum = 0.;
+    for ( int i = 0; i < NUM_WORK_GROUPS; i++ )
+    {
+        sum += hC[ i ];
+    }
+
 
 	fprintf( stderr, "Elements: %8d\tWork Group Size: %4d\tWork Groups: %10d\t%10.3lf GigaMultsPerSecond\n",
 		NUM_ELEMENTS, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
+	printf("%10.3lf GigaMultsPerSecond", (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
 
 #ifdef WIN32
 	Sleep( 2000 );
