@@ -264,7 +264,7 @@ main( int argc, char* argv[ ] )
 	double multsPerSecond = (float)SIZE * (float)NUMTRIES / secondsTotal;
 	double megaMultsPerSecond = multsPerSecond / 1000000.;
 	fprintf( stderr, "Array Size = %10d, MegaTrials/Second = %10.2lf\n", SIZE, megaMultsPerSecond );
-	printf("%10.2lf", megaMultsPerSecond );
+	printf("%10.2lf,", megaMultsPerSecond );
 
 	// copy result from the device to the host:
 	status = cudaMemcpy( hits, dD, SIZE*sizeof(float), cudaMemcpyDeviceToHost );
