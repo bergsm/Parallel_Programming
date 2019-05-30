@@ -5,6 +5,7 @@ proj2
 proj3
 proj4
 proj5*
+proj6
 *.csv
 *.txt
 *.zip
@@ -16,3 +17,4 @@ proj5*
 Week*
 first
 hello
+
