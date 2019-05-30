@@ -1,13 +1,14 @@
 #~/bin/bash
 
-#TODO compile for CUDA
+export NVCC=/usr/local/cuda-10.1/bin/nvcc
+
 machine=$(uname)
-alias macCompile='g++-8 -DBLOCKSIZE=$blocksize -DNUMTRIALS=$trials -DLAST=$last -o proj6 main.cpp -lm -fopenmp'
-alias linuxCompile='g++ -DBLOCKSIZE=$blocksize -DNUMTRIALS=$trials -DLAST=$last -o proj6 main.cpp -lm -fopenmp'
+alias macCompile='$NVCC -DBLOCKSIZE=$blocksize -DSIZE=$trials -DLAST=$last -o proj6 ./CudaMonteCarlo/monteCarlo.cu'
+alias linuxCompile='$NVCC -DBLOCKSIZE=$blocksize -DSIZE=$trials -DLAST=$last -o proj6 ./CudaMonteCarlo/monteCarlo.cu'
 last=0
 
 rm output.csv
-echo " , 1, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000" >> output.csv
+echo " ,16000, 32000, 64000, 128000, 256000, 512000" >> output.csv
 
 for blocksize in 16 32 64
 do
