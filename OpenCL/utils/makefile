@@ -1,2 +1,2 @@
 all:
-	g++-9 -o printinfo printinfo.cpp -Wno-write-strings -lm -framework OpenCL -fopenmp
+	g++ -o printinfo printinfo.cpp -Wno-write-strings -lm -lOpenCL -fopenmp

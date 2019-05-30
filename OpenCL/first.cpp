@@ -19,8 +19,8 @@
 
 
 #ifndef NMB
-#define	NMB			32
-//#define	NMB			64
+//#define	NMB			32
+#define	NMB			64
 #endif
 
 //#define NUM_ELEMENTS		NMB*1024*1024
