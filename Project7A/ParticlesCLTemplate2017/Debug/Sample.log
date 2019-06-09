@@ -1,0 +1,2 @@
+﻿sample.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+  Sample.vcxproj -> Y:\OpenCL\ParticlesCLTemplate2017\.\Debug\Sample.exe
