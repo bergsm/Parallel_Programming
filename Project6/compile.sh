@@ -10,7 +10,7 @@ last=0
 rm output.csv
 echo " ,16000, 32000, 64000, 128000, 256000, 512000" >> output.csv
 
-for blocksize in 16 32 64
+for blocksize in 16 32 64 96 128
 do
     printf "$blocksize, " >> output.csv
     for trials in 16000 32000 64000 128000 256000 512000
