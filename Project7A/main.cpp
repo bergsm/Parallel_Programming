@@ -2,6 +2,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <omp.h>
 
@@ -33,7 +34,7 @@
 #include "CL/cl_gl.h"
 
 #ifndef NUM_PARTICLES
-#define NUM_PARTICLES       56*56
+#define NUM_PARTICLES       32*32
 #endif
 
 // title of these windows:
@@ -129,6 +130,8 @@ float	Xrot, Yrot;		// rotation angles in degrees
 float	TransXYZ[3];		// set by glui translation widgets
 
 double	ElapsedTime;
+double	totalTime = 0.;
+double	MaxPerformance;
 int		ShowPerformance;
 
 size_t GlobalWorkSize[3] = { NUM_PARTICLES, 1, 1 };
@@ -220,8 +223,8 @@ Animate( )
 	status = clEnqueueAcquireGLObjects( CmdQueue, 1, &dCobj, 0, NULL, NULL );
 	PrintCLError( status, "clEnqueueAcquireGLObjects (2): " );
 
-	if( ShowPerformance )
-		time0 = omp_get_wtime( );
+	//if( ShowPerformance )
+    time0 = omp_get_wtime( );
 
 	// 11. enqueue the Kernel object for execution:
 
@@ -229,13 +232,17 @@ Animate( )
 	status = clEnqueueNDRangeKernel( CmdQueue, Kernel, 1, NULL, GlobalWorkSize, LocalWorkSize, 0, NULL, &wait );
 	PrintCLError( status, "clEnqueueNDRangeKernel: " );
 
-	if( ShowPerformance )
-	{
-		status = clWaitForEvents( 1, &wait );
-		PrintCLError( status, "clWaitForEvents: " );
-		time1 = omp_get_wtime( );
-		ElapsedTime = time1 - time0;
-	}
+	//if( ShowPerformance )
+	//{
+    status = clWaitForEvents( 1, &wait );
+    PrintCLError( status, "clWaitForEvents: " );
+    time1 = omp_get_wtime( );
+    ElapsedTime = time1 - time0;
+    totalTime += ElapsedTime;
+    fprintf(stderr, "Total Time: %2.2lf\n", totalTime);
+        if (totalTime >= 10.0)
+            Quit();
+	//}
 
 	clFinish( CmdQueue );
 	status = clEnqueueReleaseGLObjects( CmdQueue, 1, &dCobj, 0, NULL, NULL );
@@ -245,6 +252,7 @@ Animate( )
 
 	glutSetWindow( MainWindow );
 	glutPostRedisplay( );
+
 }
 
 
@@ -362,10 +370,15 @@ Display( )
 
 	glCallList( SphereList );
 
+    double performance = (double)NUM_PARTICLES/ElapsedTime/1000000000.;
+    if (performance > MaxPerformance && performance < float('Inf'))
+        MaxPerformance = performance;
+
 	if( ShowPerformance )
 	{
 		char str[128];
 		sprintf( str, "%6.4f GigaParticles/Sec", (float)NUM_PARTICLES/ElapsedTime/1000000000. );
+		//sprintf( str, "%6.4f GigaParticles/Sec", (float)NUM_PARTICLES/ElapsedTime/1000000000. );
 		glDisable( GL_DEPTH_TEST );
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
@@ -501,6 +514,16 @@ InitCL( )
       (cl_context_properties) kCGLShareGroup,
       0
     };
+
+    //For Linux
+	//cl_context_properties props[ ] =
+	//{
+	//	CL_GL_CONTEXT_KHR,		(cl_context_properties) glXGetCurrentContext( ),
+	//	CL_GLX_DISPLAY_KHR,			(cl_context_properties) glXGetCurrentDC( ),
+	//	CL_CONTEXT_PLATFORM,		(cl_context_properties) Platform,
+	//	0
+	//};
+
 
 	cl_context Context = clCreateContext( props, 1, &Device, NULL, NULL, &status );
 	PrintCLError( status, "clCreateContext: " );
@@ -643,7 +666,10 @@ InitGlui( )
 		Glui->add_button_to_panel( panel, "Quit", QUIT, (GLUI_Update_CB) Buttons );
 
 	Glui->set_main_gfx_window( MainWindow );
-	GLUI_Master.set_glutIdleFunc( NULL );
+	GLUI_Master.set_glutIdleFunc( Animate );
+    // uncomment to use buttons
+	//GLUI_Master.set_glutIdleFunc( NULL );
+
 }
 
 
@@ -695,11 +721,24 @@ InitLists( )
 {
 	SphereList = glGenLists( 1 );
 	glNewList( SphereList, GL_COMPILE );
-		glColor3f( .9f, .9f, 0. );
+		glColor3f( .0f, .9f, 0. );
 		glPushMatrix( );
-			glTranslatef( -100.f, -800.f, 0.f );
-			glutWireSphere( 600.f, 100, 100 );
+			glTranslatef( -150.f, -300.f, 0.f );
+			//glutWireSphere( 600.f, 100, 100 );
+			glutWireSphere( 100.f, 100, 100 );
 		glPopMatrix( );
+        glColor3f( .9f, .0f, 0. );
+		glPushMatrix( );
+			glTranslatef( 150.f, -300.f, 0.f );
+			//glutWireSphere( 600.f, 100, 100 );
+			glutWireSphere( 100.f, 100, 100 );
+		glPopMatrix( );
+
+
+		//glPushMatrix( );
+		//	glTranslatef( 100.f, -800.f, 0.f );
+		//	glutWireSphere( 300.f, 100, 100 );
+		//glPopMatrix( );
 	glEndList( );
 
 	AxesList = glGenLists( 1 );
@@ -886,12 +925,12 @@ ResetParticles( )
 
 	for( int i = 0; i < NUM_PARTICLES; i++ )
 	{
-		//hVel[i].x = Ranf( VMIN, VMAX );
-		//hVel[i].y = Ranf(   0., VMAX );
-		//hVel[i].z = Ranf( VMIN, VMAX );
-		hVel[i].x = 0.001;
-		hVel[i].y = 0;
-		hVel[i].z = 0;
+		hVel[i].x = Ranf( VMIN, VMAX );
+		hVel[i].y = Ranf(   0., VMAX );
+		hVel[i].z = Ranf( VMIN, VMAX );
+		//hVel[i].x = 0.001;
+		//hVel[i].y = 0;
+		//hVel[i].z = 0;
 	}
 }
 
@@ -1061,6 +1100,8 @@ Quit( )
 	glutSetWindow( MainWindow );
 	glFinish( );
 	glutDestroyWindow( MainWindow );
+
+    printf("%d, %4.4lf\n", NUM_PARTICLES, MaxPerformance);
 
 
 	// 13. clean everything up:

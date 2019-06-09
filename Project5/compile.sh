@@ -1,8 +1,7 @@
 #~/bin/bash
 
 machine=$(uname)
-alias macCompile='g++-9 -DNUM_ELEMENTS=$globalSize -DLOCAL_SIZE=$localSize -o proj5 main.cpp -Wno-write-strings -lm -framework OpenCL -fopenmp
-'
+alias macCompile='g++-9 -DNUM_ELEMENTS=$globalSize -DLOCAL_SIZE=$localSize -o proj5 main.cpp -Wno-write-strings -lm -framework OpenCL -fopenmp'
 alias linuxCompile='g++ -DNUM_ELEMENTS=$globalSize -DLOCAL_SIZE=$localSize -o proj5 main.cpp -Wno-write-strings -Wno-format -lm -lOpenCL -fopenmp'
 
 rm output.csv

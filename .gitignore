@@ -12,6 +12,7 @@ proj7
 *.zip
 *.bak
 *.pdf
+*.png
 *.gcp.*
 *.gsheet
 *.swp

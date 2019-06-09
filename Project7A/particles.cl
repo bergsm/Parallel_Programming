@@ -68,9 +68,10 @@ Particle( global point *dPobj, global vector *dVel, global color *dCobj )
 {
 	const float4 G       = (float4) ( 0., -9.8, 0., 0. );
 	const float  DT      = 0.1;
-	const float  maxVel  = 0.03;
-	const float  accel   = 0.01;
-	const sphere Sphere1 = (sphere)( -100., -800., 0.,  600. );
+	//const float  maxVel  = 0.03;
+	//const float  accel   = 0.01;
+	const sphere Sphere1 = (sphere)( -150., -300., 0.,  100. );
+	const sphere Sphere2 = (sphere)( 150., -300., 0.,  100. );
 	int gid = get_global_id( 0 );
 
     point p  = dPobj[gid];
@@ -78,14 +79,20 @@ Particle( global point *dPobj, global vector *dVel, global color *dCobj )
     color c = dCobj[gid];
 
     point pp  = p + v*DT + G * (point)(.5*DT*DT);
-    //vector vp = G*DT + turnLeft(v, maxVel, accel);
-    vector vp = v + G*DT + turnLeft(v, maxVel, accel)*DT;
+    vector vp = v + G*DT;
+    //vector vp = v + G*DT + turnLeft(v, maxVel, accel)*DT;
     pp.w = 1;
     vp.w = 0;
 
     if( IsInsideSphere( pp, Sphere1) )
     {
         vp = BounceSphere( p, v, Sphere1 );
+        pp = p + vp*DT + G * (point)(.5*DT*DT );
+        c.g  = 1;
+    }
+    if( IsInsideSphere( pp, Sphere2) )
+    {
+        vp = BounceSphere( p, v, Sphere2 );
         pp = p + vp*DT + G * (point)(.5*DT*DT );
         c.r  = 1;
     }
