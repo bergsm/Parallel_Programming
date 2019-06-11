@@ -118,24 +118,6 @@ __global__  void MonteCarlo( float *xcs, float *ycs, float *rs , int *hits)
             }
         }
     }
-
-
-
-	//prods[tnum] = A[gid] * B[gid];
-
-	//for (int offset = 1; offset < numItems; offset *= 2)
-	//{
-	//	int mask = 2 * offset - 1;
-	//	__syncthreads();
-	//	if ((tnum & mask) == 0)
-	//	{
-	//		prods[tnum] += prods[tnum + offset];
-	//	}
-	//}
-
-	//__syncthreads();
-	//if (tnum == 0)
-	//	C[wgNum] = prods[0];
 }
 
 
