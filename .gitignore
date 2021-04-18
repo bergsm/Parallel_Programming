@@ -1,6 +1,5 @@
 *.gdoc
 proj0
-Project1
 proj2
 proj3
 proj4
@@ -11,9 +10,7 @@ proj7
 *.txt
 *.zip
 *.bak
-*.pdf
 *.png
-*.mov
 *.gcp.*
 *.gsheet
 *.swp
