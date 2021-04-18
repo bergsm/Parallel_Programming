@@ -18,15 +18,22 @@
 #include "glew.h"
 #endif
 
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/CGLDevice.h>
-#include <OpenGL/CGLCurrent.h>
-#include <OpenCL/cl_gl_ext.h>
+//#include <OpenGL/gl.h>
+#include <GL/gl.h>
+//#include <OpenGL/glu.h>
+#include <GL/glu.h>
+#include <GL/glew.h>
+//#include <OpenGL/CGLDevice.h>
+//#include <GL/CGLDevice.h>
+//#include <OpenGL/CGLCurrent.h>
+//#include <GL/CGLCurrent.h>
+//#include <OpenCL/cl_gl_ext.h>
+#include <CL/cl_gl_ext.h>
 //#include "H/glut.h"
-//#include "H/glui.h"
-#include <GLUI/glui.h>
-#include <GLUT/glut.h>
+#include <GL/glut.h>
+#include "H/glui.h"
+//#include <GLUI/glui.h>
+//#include <GLUT/glut.h>
 
 //#include "errorcodes.cpp"
 
@@ -472,25 +479,25 @@ InitCL( )
 	// (no point going on if it isn't):
 	// (we need the Device in order to ask, so can't do it any sooner than here)
 
-	//if(  IsCLExtensionSupported( "cl_khr_gl_sharing" )  )
-	//{
-	//	fprintf( stderr, "cl_khr_gl_sharing is supported.\n" );
-	//}
-	//else
-	//{
-	//	fprintf( stderr, "cl_khr_gl_sharing is not supported -- sorry.\n" );
-	//	return;
-	//}
-
-    if(  IsCLExtensionSupported( "cl_APPLE_gl_sharing" )  )
+	if(  IsCLExtensionSupported( "cl_khr_gl_sharing" )  )
 	{
-		fprintf( stderr, "cl_apple_gl_sharing is supported.\n" );
+		fprintf( stderr, "cl_khr_gl_sharing is supported.\n" );
 	}
 	else
 	{
-		fprintf( stderr, "cl_apple_gl_sharing is not supported -- sorry.\n" );
+		fprintf( stderr, "cl_khr_gl_sharing is not supported -- sorry.\n" );
 		return;
 	}
+
+    //if(  IsCLExtensionSupported( "cl_APPLE_gl_sharing" )  )
+	//{
+	//	fprintf( stderr, "cl_apple_gl_sharing is supported.\n" );
+	//}
+	//else
+	//{
+	//	fprintf( stderr, "cl_apple_gl_sharing is not supported -- sorry.\n" );
+	//	return;
+	//}
 
 
 
@@ -506,23 +513,23 @@ InitCL( )
 	//};
 
     //For OSX
-    CGLContextObj     kCGLContext     = CGLGetCurrentContext();
-    CGLShareGroupObj  kCGLShareGroup  = CGLGetShareGroup(kCGLContext);
+    //CGLContextObj     kCGLContext     = CGLGetCurrentContext();
+    //CGLShareGroupObj  kCGLShareGroup  = CGLGetShareGroup(kCGLContext);
 
-    cl_context_properties props[] = {
-      CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
-      (cl_context_properties) kCGLShareGroup,
-      0
-    };
+    //cl_context_properties props[] = {
+    //  CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
+    //  (cl_context_properties) kCGLShareGroup,
+    //  0
+    //};
 
     //For Linux
-	//cl_context_properties props[ ] =
-	//{
-	//	CL_GL_CONTEXT_KHR,		(cl_context_properties) glXGetCurrentContext( ),
-	//	CL_GLX_DISPLAY_KHR,			(cl_context_properties) glXGetCurrentDC( ),
-	//	CL_CONTEXT_PLATFORM,		(cl_context_properties) Platform,
-	//	0
-	//};
+	cl_context_properties props[ ] =
+	{
+		CL_GL_CONTEXT_KHR,		(cl_context_properties) glXGetCurrentContext( ),
+		CL_GLX_DISPLAY_KHR,			(cl_context_properties) glXGetCurrentDC( ),
+		CL_CONTEXT_PLATFORM,		(cl_context_properties) Platform,
+		0
+	};
 
 
 	cl_context Context = clCreateContext( props, 1, &Device, NULL, NULL, &status );
