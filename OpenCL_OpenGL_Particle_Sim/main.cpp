@@ -19,20 +19,22 @@
 #endif
 
 //#include <OpenGL/gl.h>
-#include <GL/gl.h>
 //#include <OpenGL/glu.h>
-#include <GL/glu.h>
 #include <GL/glew.h>
+#include <GL/glu.h>
+#include <GL/gl.h>
 //#include <OpenGL/CGLDevice.h>
 //#include <GL/CGLDevice.h>
 //#include <OpenGL/CGLCurrent.h>
 //#include <GL/CGLCurrent.h>
 //#include <OpenCL/cl_gl_ext.h>
-#include <CL/cl_gl_ext.h>
+//#include <CL/cl_gl_ext.h>
+#include "CL/cl_gl_ext.h"
 //#include "H/glut.h"
 #include <GL/glut.h>
-#include "H/glui.h"
-//#include <GLUI/glui.h>
+#include <GL/glx.h>
+//#include "H/glui.h"
+#include <GL/glui.h>
 //#include <GLUT/glut.h>
 
 //#include "errorcodes.cpp"
@@ -41,7 +43,8 @@
 #include "CL/cl_gl.h"
 
 #ifndef NUM_PARTICLES
-#define NUM_PARTICLES       32*32
+//#define NUM_PARTICLES       32*32
+#define NUM_PARTICLES       1048576*16
 #endif
 
 // title of these windows:
@@ -176,7 +179,7 @@ SQR( float x )
 void	Animate( );
 void	Axes( float );
 void	Buttons( int );
-void	Display( );
+void	Display_func( );
 void	DoRasterString( float, float, float, char * );
 void	DoStrokeString( float, float, float, float, char * );
 void	InitCL( );
@@ -207,6 +210,7 @@ main( int argc, char *argv[ ] )
 	glutInit( &argc, argv );
 	InitGraphics( );
 	InitLists( );
+	//InitGlui( );
 	InitCL( );
 	Reset( );
 	InitGlui( );
@@ -247,8 +251,8 @@ Animate( )
     ElapsedTime = time1 - time0;
     totalTime += ElapsedTime;
     fprintf(stderr, "Total Time: %2.2lf\n", totalTime);
-        if (totalTime >= 10.0)
-            Quit();
+        if (totalTime >= 3.0)
+            //Quit();
 	//}
 
 	clFinish( CmdQueue );
@@ -315,7 +319,7 @@ Buttons( int id )
 //
 
 void
-Display( )
+Display_func( )
 {
 	glutSetWindow( MainWindow );
 	glDrawBuffer( GL_BACK );
@@ -526,7 +530,8 @@ InitCL( )
 	cl_context_properties props[ ] =
 	{
 		CL_GL_CONTEXT_KHR,		(cl_context_properties) glXGetCurrentContext( ),
-		CL_GLX_DISPLAY_KHR,			(cl_context_properties) glXGetCurrentDC( ),
+		CL_GLX_DISPLAY_KHR,			(cl_context_properties) glXGetCurrentDisplay( ),
+		//CL_GLX_DISPLAY_KHR,			(cl_context_properties) glXGetCurrentDC( ),
 		CL_CONTEXT_PLATFORM,		(cl_context_properties) Platform,
 		0
 	};
@@ -673,9 +678,9 @@ InitGlui( )
 		Glui->add_button_to_panel( panel, "Quit", QUIT, (GLUI_Update_CB) Buttons );
 
 	Glui->set_main_gfx_window( MainWindow );
-	GLUI_Master.set_glutIdleFunc( Animate );
+	//GLUI_Master.set_glutIdleFunc( Animate );
     // uncomment to use buttons
-	//GLUI_Master.set_glutIdleFunc( NULL );
+	GLUI_Master.set_glutIdleFunc( NULL );
 
 }
 
@@ -701,20 +706,20 @@ InitGraphics( )
 	// setup the callback routines:
 
 	glutSetWindow( MainWindow );
-	glutDisplayFunc( Display );
+	glutDisplayFunc( Display_func );
 	glutReshapeFunc( Resize );
 	glutKeyboardFunc( Keyboard );
 	glutMouseFunc( MouseButton );
 	glutMotionFunc( MouseMotion );
 	glutVisibilityFunc( Visibility );
 
-#ifdef WIN32
+//#ifdef WIN32
 	GLenum err = glewInit();
 	if( err != GLEW_OK )
 	{
 		fprintf( stderr, "glewInit Error\n" );
 	}
-#endif
+//#endif
 }
 
 
@@ -1130,7 +1135,7 @@ Quit( )
 float
 Ranf( float low, float high )
 {
-	long random( );		// returns integer 0 - TOP
+	long random;		// returns integer 0 - TOP
 
 	float r = (float)rand( );
 	return(   low  +  r * ( high - low ) / (float)RAND_MAX   );

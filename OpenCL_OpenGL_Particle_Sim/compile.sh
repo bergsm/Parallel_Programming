@@ -3,10 +3,10 @@
 machine=$(uname)
 alias macCompile='g++-9 -DNUM_PARTICLES=$particleSize -o proj7 main.cpp -Wno-write-strings -Wno-deprecated-declarations -lm -framework OpenGL -framework OpenCL -framework GLUI -framework GLUT -fopenmp'
 #alias macCompile='g++-9 -o proj7 main.cpp -Wno-write-strings -Wno-deprecated-declarations -lm -framework OpenGL -framework OpenCL -framework GLUI -framework GLUT -fopenmp'
-alias linuxCompile='g++ -DNUM_PARTICLES=$particleSize -o proj5 main.cpp -Wno-write-strings -Wno-format -lm -lOpenCL -fopenmp'
+alias linuxCompile='g++ -DNUM_PARTICLES=$particleSize -o proj7 main.cpp -Wno-write-strings -Wno-format -lm -lGL -lGLU -lGLEW -lglui -lOpenCL -lglut -fopenmp'
 
 rm output.csv
-for particleSize in 1024 4096 16384 65536 262144 1048576
+for particleSize in 65536 262144 1048576 2097152 4194304 8388608
 do
     #printf "$particleSize, " >> output.csv
     #printf "Elements: %s, Local Size: %s\n" "$particleSize" "$localSize"
