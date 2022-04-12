@@ -44,7 +44,7 @@
 
 #ifndef NUM_PARTICLES
 //#define NUM_PARTICLES       32*32
-#define NUM_PARTICLES       1048576*16
+#define NUM_PARTICLES       1048576*128
 #endif
 
 // title of these windows:
